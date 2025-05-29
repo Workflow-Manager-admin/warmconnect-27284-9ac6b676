@@ -225,7 +225,7 @@ function WarmConnectChat({ accentColor = "var(--kavia-orange)", backgroundColor 
         .chat-bubble {
           max-width: 75%;
           word-break: break-word;
-          padding: 12px 16px;
+          padding: 12px 16px 20px 16px; /* extra bottom padding for time */
           border-radius: 16px;
           font-size: 1.08rem;
           line-height: 1.5;
