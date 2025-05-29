@@ -117,33 +117,40 @@ function WarmConnectChat({ accentColor = "var(--kavia-orange)", backgroundColor 
           aria-live="polite"
           tabIndex={0}
         >
-          {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`chat-bubble ${msg.sender === "user" ? "chat-bubble-user" : "chat-bubble-bot"}`}
-              aria-label={msg.sender === "user" ? "You said" : "Bot replied"}
-              tabIndex={0}
-            >
-              <span>{msg.text}</span>
+          {messages.map((msg, idx) => {
+            const isUser = msg.sender === "user";
+            return (
               <div
-                className="chat-time"
-                style={{
-                  color: "var(--text-secondary)",
-                  fontSize: "0.77rem",
-                  marginTop: 4,
-                  textAlign: msg.sender === "user" ? "right" : "left",
-                  opacity: 0.85,
-                  fontWeight: 400,
-                  letterSpacing: "0.01em"
-                }}
-                aria-hidden="true"
+                key={idx}
+                className={`chat-bubble-outer ${isUser ? "chat-bubble-outer-user" : "chat-bubble-outer-bot"}`}
               >
-                {msg.timestamp instanceof Date
-                  ? msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                  : new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                <div
+                  className={`chat-bubble chat-bubble-${isUser ? "user" : "bot"}`}
+                  aria-label={isUser ? "You said" : "Bot replied"}
+                  tabIndex={0}
+                >
+                  <span>{msg.text}</span>
+                  <div
+                    className="chat-time"
+                    style={{
+                      color: "var(--text-secondary)",
+                      fontSize: "0.77rem",
+                      marginTop: 4,
+                      textAlign: isUser ? "right" : "left",
+                      opacity: 0.85,
+                      fontWeight: 400,
+                      letterSpacing: "0.01em"
+                    }}
+                    aria-hidden="true"
+                  >
+                    {msg.timestamp instanceof Date
+                      ? msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      : new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div ref={messagesEndRef} />
         </div>
         {/* Chat input area */}
