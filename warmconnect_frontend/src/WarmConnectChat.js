@@ -146,6 +146,7 @@ function WarmConnectChat({ accentColor = "var(--kavia-orange)", backgroundColor 
           ))}
           <div ref={messagesEndRef} />
         </div>
+        {/* Chat input area */}
         <form
           className="chat-input-area"
           onSubmit={handleSend}
