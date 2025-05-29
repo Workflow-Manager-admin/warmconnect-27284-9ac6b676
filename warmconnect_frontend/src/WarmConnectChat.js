@@ -1,61 +1,82 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./App.css";
 
-// PUBLIC_INTERFACE
+/**
+ * PUBLIC_INTERFACE
+ * Main WarmConnectChat component.
+ * - Message state is an array of { sender: "user"|"bot", text: string, timestamp: Date }
+ * - User can type and send messages.
+ * - Each user message receives a warm, instant simulated bot reply after a short delay.
+ * - UI scrolls smoothly to latest message on send/receive.
+ */
 function WarmConnectChat({ accentColor = "var(--kavia-orange)", backgroundColor = "var(--kavia-dark)" }) {
-  // State for messages (array of { sender: 'user'|'bot', text: string })
   const [messages, setMessages] = useState([
     {
       sender: "bot",
       text: "👋 Hi there! I'm WarmConnect. How can I brighten your day today?",
+      timestamp: new Date()
     },
   ]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
+  const pendingBotReply = useRef(null);
 
-  // Template warm, polite responses for the bot
+  // Warm, polite response pool for the bot
   const warmReplies = [
     "Thank you for reaching out! 😊 How can I assist you further?",
     "That's wonderful to hear! Let me know if there's anything you need.",
     "I'm here to help! Feel free to ask me anything.",
     "You're doing great! Is there something you'd like to talk about?",
-    "Happy to chat with you! How can I be of service?"
+    "Happy to chat with you! How can I be of service?",
+    "It’s always nice chatting with you! Is there anything on your mind today?",
+    "If you have a question or just want to chat, I’m here for you!",
+    "Remember, you’re never alone here—how can I help?"
   ];
 
-  // Scrolls to the bottom of the message list when messages change
+  // Scroll to newest message after render
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
+  // Cleanup pending bot response on unmount
+  useEffect(() => {
+    return () => {
+      if (pendingBotReply.current) clearTimeout(pendingBotReply.current);
+    };
+  }, []);
+
   // PUBLIC_INTERFACE
   const handleInputChange = (e) => setInput(e.target.value);
 
   // PUBLIC_INTERFACE
   const handleSend = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     const trimmed = input.trim();
-    if (trimmed === "") return;
-    const newMessages = [
-      ...messages,
-      { sender: "user", text: trimmed }
-    ];
-    setMessages(newMessages);
+    if (!trimmed) return;
+    const msgObj = {
+      sender: "user",
+      text: trimmed,
+      timestamp: new Date()
+    };
+    setMessages((msgs) => [...msgs, msgObj]);
     setInput("");
 
-    // Simulate bot response instantly with a warm reply template (randomized)
-    setTimeout(() => {
-      const botReply =
-        warmReplies[Math.floor(Math.random() * warmReplies.length)];
-      setMessages((msgs) => [
-        ...msgs,
+    // Prepare bot reply after a natural, short delay
+    if (pendingBotReply.current) clearTimeout(pendingBotReply.current);
+    pendingBotReply.current = setTimeout(() => {
+      const botText = warmReplies[Math.floor(Math.random() * warmReplies.length)];
+      setMessages((msgsNow) => [
+        ...msgsNow,
         {
           sender: "bot",
-          text: botReply,
-        },
+          text: botText,
+          timestamp: new Date()
+        }
       ]);
-    }, 380); // Add a short delay for a natural flow
+      pendingBotReply.current = null;
+    }, 500 + Math.floor(Math.random() * 500)); // 500-1000ms
   };
 
   // Styling tokens using CSS variables & inline for prop-driven theming (can be extended)
@@ -103,7 +124,24 @@ function WarmConnectChat({ accentColor = "var(--kavia-orange)", backgroundColor 
               aria-label={msg.sender === "user" ? "You said" : "Bot replied"}
               tabIndex={0}
             >
-              {msg.text}
+              <span>{msg.text}</span>
+              <div
+                className="chat-time"
+                style={{
+                  color: "var(--text-secondary)",
+                  fontSize: "0.77rem",
+                  marginTop: 4,
+                  textAlign: msg.sender === "user" ? "right" : "left",
+                  opacity: 0.85,
+                  fontWeight: 400,
+                  letterSpacing: "0.01em"
+                }}
+                aria-hidden="true"
+              >
+                {msg.timestamp instanceof Date
+                  ? msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                  : new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </div>
             </div>
           ))}
           <div ref={messagesEndRef} />
